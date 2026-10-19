@@ -78,6 +78,7 @@
   environment.systemPackages = with pkgs; [
     rsync
     git
+    asciiquarium
   ];
 
   # Some programs need SUID wrappers, can be configured further or are
@@ -94,12 +95,14 @@
   services.openssh.enable = true;
 
   sops = {
-      # The encrypted secrets file
-      defaultSopsFile = ./secrets/secrets.yaml;
+    # The encrypted secrets file
+    defaultSopsFile = ./secrets/secrets.yaml;
 
-      # Decrypt using the homelab's SSH host key
-      age.sshKeyPaths = [ "/etc/ssh/ssh_host_ed25519_key" ];
-    }
+    # Decrypt using the homelab's SSH host key
+    age.sshKeyPaths = [ "/etc/ssh/ssh_host_ed25519_key" ];
+
+    secrets.hello = { };
+  };
 
   # Open ports in the firewall.
   # networking.firewall.allowedTCPPorts = [ ... ];
