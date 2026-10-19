@@ -1,0 +1,9 @@
+# Private values: deployed by rsync, never committed
+private.nix
+
+# Build output symlinks created by nix build
+result
+result-*
+
+# macOS Finder metadata
+.DS_Store

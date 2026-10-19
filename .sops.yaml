@@ -1,0 +1,12 @@
+# .sops.yaml: which keys can decrypt which files
+keys:
+  - &mac age12jrnyfvwtkudcjf60fmv8rgexv6dpnvrwkxstpy8es3m3jx9eudsjeav2f
+  - &homelab age1e6twss9ah93ftm4w4wxqq4llrlty5glyk24gm0gxn7q8u07hsyjstpuu0x 
+
+creation_rules:
+  # Every YAML file in secrets/ is encrypted for both keys
+  - path_regex: secrets/[^/]+\.yaml$
+    key_groups:
+      - age:
+          - *mac
+          - *homelab
