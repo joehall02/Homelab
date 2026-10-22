@@ -10,9 +10,12 @@
       # Reuse the nixpkgs above instead of downloading a second copy
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    # VPN-Confinement runs chosen systemd services inside a WireGuard namespace
+    vpn-confinement.url = "github:Maroka-chan/VPN-Confinement";
   };
 
-  outputs = { nixpkgs, sops-nix, ... }: {
+  outputs = { nixpkgs, sops-nix, vpn-confinement, ... }: {
     # "homelab" is the name used in --flake `deploy.sh`.
     nixosConfigurations.homelab = nixpkgs.lib.nixosSystem {
       system = "x86_64-linux";
@@ -25,6 +28,7 @@
       modules = [
         ./configuration.nix
         sops-nix.nixosModules.sops
+        vpn-confinement.nixosModules.default
       ];
     };
   };

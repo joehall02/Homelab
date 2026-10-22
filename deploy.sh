@@ -71,8 +71,10 @@ rsync -avz --delete \
   ./ "$HOST:$REMOTE_DIR/"
 
 # --- 3. Rebuild ---
-# With --update, refresh flake.lock to the newest input versions first.
-UPDATE_CMD=""
+# Write flake.lock as the normal user before the sudo rebuild, so root never
+# owns it (a root-owned flake.lock makes the next rsync fail).
+# nix flake lock only adds missing inputs; with --update, refresh them all.
+UPDATE_CMD="nix flake lock && "
 if [ "$UPDATE" = true ]; then
   UPDATE_CMD="nix flake update && "
 fi
