@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
-# deploy.sh: copy this folder to the homelab and rebuild NixOS.
+# Copy this folder to the homelab and rebuild NixOS.
 # Deploys exactly what is on disk.
 #
 #   ./deploy.sh           normal deploy
 #   ./deploy.sh --pull    copy edits made on the homelab back to the Mac
-#   ./deploy.sh --force   skip the safety check (rarely needed)
+#   ./deploy.sh --force   skip the safety check and config check (rarely needed)
 #   ./deploy.sh --update  update nixpkgs and other inputs, then deploy
 
 # Stop at the first error, on unset variables, and on failures inside pipes
@@ -44,16 +44,34 @@ if [ "$PULL" = true ]; then
   exit 0
 fi
 
+# --- 0. Config check ---
+# Evaluate the config on the Mac first, so mistakes are caught before
+# anything is copied. check.sh also fails if nix isn't installed here.
+if [ "$FORCE" = false ] && ! ./check.sh; then
+  echo "Deploy cancelled."
+  exit 1
+fi
+
 # --- 1. Safety check ---
 # .deployed.sha256 on the homelab is a fingerprint of every file from the
 # previous deploy. If any file no longer matches it, someone edited the
 # homelab's copy directly, so stop rather than overwrite that work.
 # On the very first deploy the file doesn't exist yet and the check is skipped.
+# ssh exits with 255 when it can't connect, which is told apart from a failed
+# check so a switched-off homelab isn't reported as changed files.
 echo "Checking the homelab for local edits..."
-if [ "$FORCE" = false ] && ! ssh "$HOST" "[ ! -f $REMOTE_DIR/.deployed.sha256 ] || (cd $REMOTE_DIR && sha256sum --check --quiet .deployed.sha256)"; then
-  echo "Files on the homelab changed since the last deploy. Not overwriting them."
-  echo "Bring them to the Mac with ./deploy.sh --pull, review them, then deploy again."
-  exit 1
+if [ "$FORCE" = false ]; then
+  CHECK_STATUS=0
+  ssh -o ConnectTimeout=10 "$HOST" "[ ! -f $REMOTE_DIR/.deployed.sha256 ] || (cd $REMOTE_DIR && sha256sum --check --quiet .deployed.sha256)" \
+    || CHECK_STATUS=$?
+  if [ "$CHECK_STATUS" -eq 255 ]; then
+    echo "Can't reach the homelab. Is it switched on?"
+    exit 1
+  elif [ "$CHECK_STATUS" -ne 0 ]; then
+    echo "Files on the homelab changed since the last deploy. Not overwriting them."
+    echo "Bring them to the Mac with ./deploy.sh --pull, review them, then deploy again."
+    exit 1
+  fi
 fi
 
 # --- 2. Copy the folder ---
@@ -66,6 +84,7 @@ rsync -avz --delete \
   --exclude .DS_Store \
   --exclude .deployed.sha256 \
   --exclude deploy.sh \
+  --exclude check.sh \
   --exclude .gitignore \
   --exclude .sops.yaml \
   ./ "$HOST:$REMOTE_DIR/"
