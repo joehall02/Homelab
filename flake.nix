@@ -23,6 +23,7 @@
       # Load private.nix once and make it available to every module
       specialArgs = {
         private = import ./private.nix;
+        username = "joehall";
       };
 
       modules = [

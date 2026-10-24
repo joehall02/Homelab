@@ -13,6 +13,7 @@
     # What the homelab runs
     ./services/ssh.nix
     ./services/media-stack
+    ./services/file-sharing.nix
   ];
 
   # Version of the first install; never change it (see the NixOS manual)
