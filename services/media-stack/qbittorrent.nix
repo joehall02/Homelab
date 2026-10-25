@@ -17,6 +17,11 @@
         DefaultSavePath = "${private.mediaDir}/downloads";
         AnonymousModeEnabled = true;
 
+        # Only use the WireGuard interface (VPN-Confinement names it
+        # <namespace>0), as a backup to the namespace kill switch
+        Interface = "vpn0";
+        InterfaceName = "vpn0";
+
         # Max active uploads only applies when queueing is on
         QueueingSystemEnabled = true;
         MaxActiveUploads = 0;
@@ -25,7 +30,11 @@
         GlobalMaxRatio = 0;
         GlobalMaxSeedingMinutes = 0;
         GlobalMaxInactiveSeedingMinutes = 0;
+
+        # Skip common malware file types (.exe allowed)
+        ExcludedFileNames = "*.scr, *.bat, *.cmd, *.lnk, *.msi, *.vbs, *.js";
       };
+      BitTorrent.ExcludedFileNamesEnabled = true;
 
       Preferences.WebUI = {
         Username = username;
