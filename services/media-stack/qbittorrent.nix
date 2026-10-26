@@ -55,12 +55,13 @@
   };
 
   # Make the web UI reachable from outside the namespace
-  vpnNamespaces.vpn.portMappings = [{
-    from = private.qbittorrentWebuiPort;
-    to = private.qbittorrentWebuiPort;
-  }];
+  vpnNamespaces.vpn.portMappings = [
+    {
+      from = private.qbittorrentWebuiPort;
+      to = private.qbittorrentWebuiPort;
+    }
+  ];
 
   # Web UI is reached through the namespace port mapping
   networking.firewall.allowedTCPPorts = [ private.qbittorrentWebuiPort ];
 }
-

@@ -35,7 +35,11 @@
   };
 
   # GPU access (video, render) and the shared media folders (media)
-  users.users.jellyfin.extraGroups = [ "video" "render" "media" ];
+  users.users.jellyfin.extraGroups = [
+    "video"
+    "render"
+    "media"
+  ];
 
   # Use the modern iHD driver rather than the old i965 one
   systemd.services.jellyfin.environment.LIBVA_DRIVER_NAME = "iHD";

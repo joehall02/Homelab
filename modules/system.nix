@@ -30,8 +30,16 @@
   i18n.defaultLocale = "en_GB.UTF-8";
   console.keyMap = "uk";
 
+  # Large console font so the laptop screen is readable
+  console.font = "ter-v32n";
+  console.packages = [ pkgs.terminus_font ];
+  console.earlySetup = true;
+
   nixpkgs.config.allowUnfree = true;
-  nix.settings.experimental-features = [ "nix-command" "flakes" ];
+  nix.settings.experimental-features = [
+    "nix-command"
+    "flakes"
+  ];
 
   environment.systemPackages = with pkgs; [
     rsync

@@ -87,6 +87,7 @@ rsync -avz --delete \
   --exclude check.sh \
   --exclude .gitignore \
   --exclude .sops.yaml \
+  --exclude docs \
   ./ "$HOST:$REMOTE_DIR/"
 
 # --- 3. Rebuild ---
