@@ -61,7 +61,4 @@
       to = private.qbittorrentWebuiPort;
     }
   ];
-
-  # Web UI is reached through the namespace port mapping
-  networking.firewall.allowedTCPPorts = [ private.qbittorrentWebuiPort ];
 }

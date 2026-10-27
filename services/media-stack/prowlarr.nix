@@ -3,8 +3,7 @@
 {
   services.prowlarr = {
     enable = true;
-    # Opens settings.server.port
-    openFirewall = true;
+    # No openFirewall: the web UI is reached through the namespace port mapping
     settings = {
       server.port = private.prowlarrPort;
       log.analyticsEnabled = false;
