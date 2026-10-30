@@ -17,6 +17,7 @@
     ./services/reverse-proxy.nix
     ./services/media-stack
     ./services/file-sharing.nix
+    ./services/monitoring.nix
   ];
 
   # Version of the first install; never change it (see the NixOS manual)

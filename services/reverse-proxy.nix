@@ -11,6 +11,7 @@ let
     lidarr = "127.0.0.1:${toString private.lidarrPort}";
     prowlarr = "${vpn}:${toString private.prowlarrPort}";
     qbittorrent = "${vpn}:${toString private.qbittorrentWebuiPort}";
+    beszel = "127.0.0.1:${toString config.services.beszel.hub.port}";
   };
 in
 {
