@@ -13,8 +13,8 @@
 
     settings = {
       global = {
-        # Only the LAN may connect
-        "hosts allow" = "${private.lanSubnet} 127.0.0.1";
+        # Only the LAN and Tailscale devices (100.64.0.0/10) may connect
+        "hosts allow" = "${private.lanSubnet} 100.64.0.0/10 127.0.0.1";
         "hosts deny" = "0.0.0.0/0";
 
         # SMB3 only, and every connection encrypted
