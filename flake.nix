@@ -4,6 +4,9 @@
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-26.05";
 
+    # Only for single packages that need a newer version
+    nixpkgs-unstable.url = "github:NixOS/nixpkgs/nixos-unstable";
+
     # sops-nix decrypts secrets on the homelab
     sops-nix = {
       url = "github:Mic92/sops-nix";
@@ -15,7 +18,7 @@
     vpn-confinement.url = "github:Maroka-chan/VPN-Confinement";
   };
 
-  outputs = { nixpkgs, sops-nix, vpn-confinement, ... }: {
+  outputs = { nixpkgs, nixpkgs-unstable, sops-nix, vpn-confinement, ... }: {
     # "homelab" is the name used in --flake `deploy.sh`.
     nixosConfigurations.homelab = nixpkgs.lib.nixosSystem {
       system = "x86_64-linux";
@@ -24,6 +27,8 @@
       specialArgs = {
         private = import ./private.nix;
         username = "joehall";
+        # Packages from nixos-unstable
+        unstable = nixpkgs-unstable.legacyPackages.x86_64-linux;
       };
 
       modules = [

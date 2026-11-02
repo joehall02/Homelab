@@ -1,4 +1,4 @@
-{ config, lib, private, username, ... }:
+{ config, lib, private, username, unstable, ... }:
 
 {
   # Secret settings as KEY=value lines
@@ -6,18 +6,20 @@
 
   services.shelfmark = {
     enable = true;
-    # Opens environment.FLASK_PORT
-    openFirewall = true;
+    # TODO: Remove when updating to latest nixpkgs
+    # 26.05's 1.3.0 never uses FlareSolverr for searches (fixed in 1.3.7).
+    package = unstable.shelfmark;
+    # No openFirewall: the web UI is reached through the namespace port mapping
     environment = {
-      # The module's default of 127.0.0.1 would hide it from the LAN
+      # The module's default of 127.0.0.1 would hide it from the port mapping
       FLASK_HOST = "0.0.0.0";
       FLASK_PORT = private.shelfmarkPort;
       INGEST_DIR = "${private.mediaDir}/books";
-      # Search Prowlarr's indexers. It runs in the VPN namespace, so it's
-      # reached at the namespace address; PROWLARR_API_KEY is in shelfmark-env
+      # Search Prowlarr's indexers. It shares the VPN namespace with Shelfmark,
+      # so it's reached at the namespace address; PROWLARR_API_KEY is in shelfmark-env
       PROWLARR_ENABLED = "true";
       PROWLARR_URL = "http://${config.vpnNamespaces.vpn.namespaceAddress}:${toString private.prowlarrPort}";
-      # Send torrents to qBittorrent, also in the VPN namespace. It saves to
+      # Send torrents to qBittorrent, also in the namespace. It saves to
       # the shared downloads folder, which Shelfmark can read through the
       # media group. The password is entered in Shelfmark's web UI, which
       # keeps it in its own state folder
@@ -27,6 +29,8 @@
       # After copying a download into books, have qBittorrent drop the torrent
       # and its files. qBittorrent stops seeding on completion anyway
       PROWLARR_TORRENT_ACTION = "remove_and_delete";
+      # Solve DDoS-Guard/Cloudflare challenges on the mirrors with FlareSolverr (flaresolverr.nix)
+      EXT_BYPASSER_URL = "http://${config.vpnNamespaces.vpn.namespaceAddress}:${toString config.services.flaresolverr.port}";
     };
   };
 
@@ -41,4 +45,18 @@
     # mkForce: the module sets 0077; match the arr apps' group-writable files
     UMask = lib.mkForce "0002";
   };
+
+  # Run Shelfmark inside the VPN namespace, so mirror downloads use the tunnel
+  systemd.services.shelfmark.vpnConfinement = {
+    enable = true;
+    vpnNamespace = "vpn";
+  };
+
+  # Make the web UI reachable from outside the namespace
+  vpnNamespaces.vpn.portMappings = [
+    {
+      from = private.shelfmarkPort;
+      to = private.shelfmarkPort;
+    }
+  ];
 }
