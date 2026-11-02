@@ -9,6 +9,7 @@ let
     sonarr = "127.0.0.1:${toString private.sonarrPort}";
     radarr = "127.0.0.1:${toString private.radarrPort}";
     lidarr = "127.0.0.1:${toString private.lidarrPort}";
+    navidrome = "127.0.0.1:${toString private.navidromePort}";
     prowlarr = "${vpn}:${toString private.prowlarrPort}";
     qbittorrent = "${vpn}:${toString private.qbittorrentWebuiPort}";
     beszel = "127.0.0.1:${toString config.services.beszel.hub.port}";
