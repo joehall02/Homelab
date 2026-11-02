@@ -10,6 +10,7 @@ let
     radarr = "127.0.0.1:${toString private.radarrPort}";
     lidarr = "127.0.0.1:${toString private.lidarrPort}";
     navidrome = "127.0.0.1:${toString private.navidromePort}";
+    audiobookshelf = "127.0.0.1:${toString private.audiobookshelfPort}";
     prowlarr = "${vpn}:${toString private.prowlarrPort}";
     qbittorrent = "${vpn}:${toString private.qbittorrentWebuiPort}";
     shelfmark = "${vpn}:${toString private.shelfmarkPort}";

@@ -14,6 +14,8 @@
     "d ${private.mediaDir}/movies    2775 ${username} media -"
     "d ${private.mediaDir}/music     2775 ${username} media -"
     "d ${private.mediaDir}/books     2775 ${username} media -"
+    "d ${private.mediaDir}/audiobooks 2775 ${username} media -"
+    "d ${private.mediaDir}/podcasts  2775 ${username} media -"
     "d ${private.mediaDir}/downloads 2775 ${username} media -"
   ];
 }

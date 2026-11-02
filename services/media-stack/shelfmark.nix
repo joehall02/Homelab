@@ -15,6 +15,15 @@
       FLASK_HOST = "0.0.0.0";
       FLASK_PORT = private.shelfmarkPort;
       INGEST_DIR = "${private.mediaDir}/books";
+      # Sort ebooks into <Author>/ folders, as <Title> (<Year>).<ext>
+      FILE_ORGANIZATION = "organize";
+      # Save audiobooks to their own folder, one <Author>/<Title>/ folder per book
+      DESTINATION_AUDIOBOOK = "${private.mediaDir}/audiobooks";
+      FILE_ORGANIZATION_AUDIOBOOK = "organize";
+      # Copy instead of hardlinking (the default). A hardlink shares the data so
+      # the torrent can keep seeding, but skips extracting zip/rar downloads.
+      # qBittorrent doesn't seed and remove_and_delete drops its copy anyway
+      HARDLINK_TORRENTS_AUDIOBOOK = "false";
       # Search Prowlarr's indexers. It shares the VPN namespace with Shelfmark,
       # so it's reached at the namespace address; PROWLARR_API_KEY is in shelfmark-env
       PROWLARR_ENABLED = "true";
@@ -41,7 +50,10 @@
     # DynamicUser has no users.users entry, so join the media group here
     SupplementaryGroups = [ "media" ];
     # The module's ProtectSystem=strict makes everything else read-only
-    ReadWritePaths = [ "${private.mediaDir}/books" ];
+    ReadWritePaths = [
+      "${private.mediaDir}/books"
+      "${private.mediaDir}/audiobooks"
+    ];
     # mkForce: the module sets 0077; match the arr apps' group-writable files
     UMask = lib.mkForce "0002";
   };

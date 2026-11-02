@@ -9,6 +9,7 @@
     ./lidarr.nix
     ./navidrome.nix
     ./shelfmark.nix
+    ./audiobookshelf.nix
     ./flaresolverr.nix
   ];
 }
