@@ -14,6 +14,8 @@
       # The module's default of 127.0.0.1 would hide it from the port mapping
       FLASK_HOST = "0.0.0.0";
       FLASK_PORT = private.shelfmarkPort;
+      # Require logging in with a Shelfmark account (the default is no login)
+      AUTH_METHOD = "builtin";
       INGEST_DIR = "${private.mediaDir}/books";
       # Sort ebooks into <Author>/ folders, as <Title> (<Year>).<ext>
       FILE_ORGANIZATION = "organize";
