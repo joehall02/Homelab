@@ -1,8 +1,8 @@
 { config, lib, private, ... }:
 
 let
-  # Where each app listens. qBittorrent and Prowlarr run inside the VPN
-  # namespace, so they're reached at its address instead of 127.0.0.1
+  # Where each app listens. qBittorrent, Prowlarr and Shelfmark run inside the
+  # VPN namespace, so they're reached at its address instead of 127.0.0.1
   vpn = config.vpnNamespaces.vpn.namespaceAddress;
   services = {
     jellyfin = "127.0.0.1:${toString private.jellyfinPort}";
@@ -12,6 +12,7 @@ let
     navidrome = "127.0.0.1:${toString private.navidromePort}";
     prowlarr = "${vpn}:${toString private.prowlarrPort}";
     qbittorrent = "${vpn}:${toString private.qbittorrentWebuiPort}";
+    shelfmark = "${vpn}:${toString private.shelfmarkPort}";
     beszel = "127.0.0.1:${toString config.services.beszel.hub.port}";
   };
 in

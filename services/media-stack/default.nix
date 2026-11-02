@@ -8,5 +8,6 @@
     ./radarr.nix
     ./lidarr.nix
     ./navidrome.nix
+    ./shelfmark.nix
   ];
 }
