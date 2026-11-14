@@ -18,7 +18,7 @@
       enableHardwareEncoding = true;
       enableToneMapping = true;
 
-      # What the UHD 630 can decode (no AV1: that needs 11th gen or newer)
+      # What the UHD 620 can decode (no AV1: that needs 11th gen or newer)
       hardwareDecodingCodecs = {
         h264 = true;
         hevc = true;

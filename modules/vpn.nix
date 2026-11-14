@@ -12,6 +12,6 @@
     enable = true;
     wireguardConfigFile = config.sops.secrets."surfshark.conf".path;
     # Let the LAN reach web UIs inside the namespace
-    accessibleFrom = [ private.lanSubnet ];
+    allowedIngress = [ private.lanSubnet ];
   };
 }
