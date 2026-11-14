@@ -26,6 +26,14 @@
     percentageCritical = 6;
   };
 
+  # Always plugged in: charge only between 75% and 80% to preserve the battery.
+  # Dell firmware ignores the thresholds unless the charge mode is Custom.
+  systemd.tmpfiles.rules = [
+    "w /sys/class/power_supply/BAT0/charge_control_start_threshold - - - - 75"
+    "w /sys/class/power_supply/BAT0/charge_control_end_threshold - - - - 80"
+    "w /sys/class/power_supply/BAT0/charge_types - - - - Custom"
+  ];
+
   time.timeZone = "Europe/London";
   i18n.defaultLocale = "en_GB.UTF-8";
   console.keyMap = "uk";
