@@ -2,7 +2,8 @@
 
 Guidance for AI agents (and people) changing this repo.
 
-Read [`docs/index.md`](docs/index.md) first for the layout and how modules fit together.
+Read [`README.md`](README.md) first for an overview, and the pages it links to in
+`docs/` for how each part of the homelab works.
 
 ## Ground rules
 

@@ -66,7 +66,7 @@ Apps reach the GPU through `/dev/dri/renderD128`. A service that uses it needs:
 2. `LIBVA_DRIVER_NAME=iHD` in its environment, so it uses the modern driver
    instead of the old `i965` one.
 
-Jellyfin is set up this way (see [Media stack](../media-stack.md#jellyfin)),
+Jellyfin is set up this way (`services/media-stack/jellyfin.nix`),
 and so is Immich when it's enabled.
 
 The UHD 620 can hardware-decode H.264, HEVC (including 10-bit), MPEG-2, VC-1,
