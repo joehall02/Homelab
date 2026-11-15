@@ -43,6 +43,11 @@ homelab, and a service can still fail at runtime.
 The config lives in `~/nixos-config` on the homelab (`REMOTE_DIR`).
 
 ```mermaid
+---
+config:
+  layout: dagre
+  look: classic
+---
 flowchart TD
     A["0. check.sh<br/>evaluate config locally"] -->|fails| X1[Deploy cancelled]
     A -->|passes| B["1. Safety check<br/>compare homelab files with .deployed.sha256"]

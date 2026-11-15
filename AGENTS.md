@@ -60,7 +60,8 @@ Read [`docs/index.md`](docs/index.md) first for the layout and how modules fit t
 3. Telemetry off. Everything declarable is declared.
 4. Firewall / listen address / VPN confinement, as above.
 5. A line in `services/reverse-proxy.nix` for `https://<name>.<domain>`.
-6. Update the relevant page in `docs/`.
+6. Add it to the "Where each service runs" table in `docs/network.md`, and
+   update any other relevant page in `docs/`.
 7. Run `./check.sh`.
 
 ## Checking your work
