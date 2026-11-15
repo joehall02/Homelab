@@ -12,5 +12,9 @@
     # Once logged in the key isn't needed again, even after it expires.
     authKeyFile = config.sops.secrets.tailscale-authkey.path;
     extraUpFlags = [ "--advertise-tags=tag:homelab" ];
+    # Enables IP forwarding, needed to act as an exit node
+    useRoutingFeatures = "server";
+    # Applied on every start
+    extraSetFlags = [ "--advertise-exit-node" ];
   };
 }
