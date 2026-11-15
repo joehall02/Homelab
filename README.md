@@ -18,6 +18,7 @@ live on the machine.
 | Access | Tailscale (also an exit node), Caddy with a Let's Encrypt wildcard certificate, SSH |
 | File sharing | Samba, advertised over Bonjour |
 | Monitoring | Beszel |
+| Local AI | Open WebUI, using models served by LM Studio on the Mac mini |
 | Camera roll | Immich (written, currently disabled) |
 
 qBittorrent, Prowlarr, Shelfmark, Audiobookshelf and FlareSolverr run inside a
@@ -33,6 +34,7 @@ network namespace whose only way out is a Surfshark WireGuard tunnel. See
 | [Secrets](docs/secrets.md) | sops-nix for real secrets, `private.nix` for private but non-secret values |
 | [Network](docs/network.md) | Tailscale, certificates, Caddy, the VPN namespace, Samba, SSH |
 | [Media stack](docs/media-stack.md) | Jellyfin, the arr apps, qBittorrent, Shelfmark, Audiobookshelf and how they connect |
+| [AI](docs/ai.md) | Open WebUI on the homelab, and the link to LM Studio on the Mac mini where the models run |
 | [Other services](docs/other-services.md) | Beszel monitoring, Immich |
 
 ## Getting started

@@ -35,6 +35,13 @@
   # dashboard (Networking) first, then here to match
   jellyfinPort = 8096;
 
+  # Open WebUI port
+  openWebuiPort = 8082;
+
+  # Mac mini running LM Studio, which serves the models for Open WebUI
+  macMiniIp = "192.168.1.20";
+  lmStudioPort = 1234;
+
   # Beszel hub's public key
   beszelHubKey = "ssh-ed25519 AAAA...";
 

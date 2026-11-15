@@ -38,6 +38,10 @@ From `hardware-configuration.nix`:
   panic instead of hanging.
 - **The console is readable.** A large Terminus font (`ter-v32n`) is loaded
   early in boot. Keymap is UK, locale `en_GB.UTF-8`, timezone `Europe/London`.
+- **It has swap.** An 8 GB swap file at `/var/lib/swapfile` on the SSD, so a
+  memory spike slows the machine down instead of the kernel killing a 
+  process. The partition table has no swap, so `hardware-configuration.nix`
+  lists none; the file is declared in `system.nix`.
 
 ### Battery
 

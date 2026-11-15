@@ -17,6 +17,7 @@ let
     shelfmark = "${vpn}:${toString private.shelfmarkPort}";
     audiobookshelf = "${vpn}:${toString private.audiobookshelfPort}";
     beszel = "127.0.0.1:${toString config.services.beszel.hub.port}";
+    open-webui = "127.0.0.1:${toString private.openWebuiPort}";
   };
 in
 {

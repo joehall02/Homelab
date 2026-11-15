@@ -19,6 +19,7 @@
     ./services/file-sharing.nix
     # ./services/immich.nix
     ./services/monitoring.nix
+    ./services/open-webui.nix
   ];
 
   # Version of the first install; never change it (see the NixOS manual)

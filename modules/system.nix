@@ -34,6 +34,15 @@
     "w /sys/class/power_supply/BAT0/charge_types - - - - Custom"
   ];
 
+  # Only 8 GB of RAM: an 8 GB swap file on the SSD means memory spikes 
+  # slow down instead of being killed.
+  swapDevices = [
+    {
+      device = "/var/lib/swapfile";
+      size = 8192; # MiB
+    }
+  ];
+
   time.timeZone = "Europe/London";
   i18n.defaultLocale = "en_GB.UTF-8";
   console.keyMap = "uk";

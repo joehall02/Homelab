@@ -76,6 +76,7 @@ There are two ways in:
 | Lidarr         | Host      | Yes                                   | Yes                                   |
 | Navidrome      | Host      | Yes                                   | Yes                                   |
 | Beszel         | Host      | Yes                                   | Yes                                   |
+| Open WebUI     | Host      | Yes                                   | Yes                                   |
 | qBittorrent    | Namespace | Yes, through a port mapping           | Yes                                   |
 | Prowlarr       | Namespace | Yes, through a port mapping           | Yes                                   |
 | Shelfmark      | Namespace | Yes, through a port mapping           | Yes                                   |
@@ -320,7 +321,7 @@ decrypt secrets ([Secrets](secrets.md)).
 | Port                            | Interface         | For                                                           |
 | ------------------------------- | ----------------- | ------------------------------------------------------------- |
 | 443/tcp                         | `tailscale0` only | Caddy HTTPS                                                   |
-| Each host service's web UI port | All               | `openFirewall` on Jellyfin, Sonarr, Radarr, Lidarr, Navidrome |
+| Each host service's web UI port | All               | `openFirewall` on Jellyfin, Sonarr, Radarr, Lidarr, Navidrome, Open WebUI |
 | 8090/tcp                        | All               | Beszel hub (its module has no `openFirewall`)                 |
 | 139, 445/tcp                    | All               | Samba; `hosts allow` decides who gets in                      |
 | 5353/udp                        | All               | Avahi / mDNS                                                  |
