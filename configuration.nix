@@ -20,6 +20,7 @@
     # ./services/immich.nix
     ./services/monitoring.nix
     ./services/open-webui.nix
+    ./services/searxng.nix
   ];
 
   # Version of the first install; never change it (see the NixOS manual)

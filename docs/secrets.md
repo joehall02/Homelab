@@ -49,6 +49,7 @@ new SSH host key** stops it decrypting until the file is re-keyed (see below).
 | `navidrome-env`     | `ND_PASSWORDENCRYPTIONKEY=…`                                   | `services/media-stack/navidrome.nix`          |
 | `shelfmark-env`     | `KEY=value` lines, including `PROWLARR_API_KEY`                | `services/media-stack/shelfmark.nix`          |
 | `open-webui-env`    | `WEBUI_SECRET_KEY=…` and `OPENAI_API_KEY=…` (LM Studio token)  | `services/open-webui.nix`                     |
+| `searxng-env`       | `SEARXNG_SECRET=…`, a random string                            | `services/searxng.nix`                        |
 
 ## Using a secret in a module
 

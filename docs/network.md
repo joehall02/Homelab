@@ -77,6 +77,7 @@ There are two ways in:
 | Navidrome      | Host      | Yes                                   | Yes                                   |
 | Beszel         | Host      | Yes                                   | Yes                                   |
 | Open WebUI     | Host      | Yes                                   | Yes                                   |
+| SearXNG        | Namespace, switchable with `useVpn` | Yes, through a port mapping (or an open port on the host) | Yes |
 | qBittorrent    | Namespace | Yes, through a port mapping           | Yes                                   |
 | Prowlarr       | Namespace | Yes, through a port mapping           | Yes                                   |
 | Shelfmark      | Namespace | Yes, through a port mapping           | Yes                                   |
@@ -147,7 +148,8 @@ DNS record lives outside this repo.
 `modules/vpn.nix`, using [VPN-Confinement](https://github.com/Maroka-chan/VPN-Confinement).
 
 Some services only ever use the VPN: qBittorrent, Prowlarr, Shelfmark,
-Audiobookshelf and FlareSolverr. Instead of routing the whole machine through
+Audiobookshelf, FlareSolverr and SearXNG (which can be switched off it, see
+[Other services › SearXNG](other-services.md#searxng-search)). Instead of routing the whole machine through
 the VPN, they run inside a Linux **network namespace** called `vpn`. It has its
 own interfaces, routes and firewall, separate from the host's.
 

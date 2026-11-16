@@ -1,5 +1,13 @@
 { config, private, ... }:
 
+let
+  # SearXNG can be switched in or out of the VPN namespace (searxng.nix)
+  searxngHost =
+    if config.systemd.services.searx.vpnConfinement.enable then
+      config.vpnNamespaces.vpn.namespaceAddress
+    else
+      "127.0.0.1";
+in
 {
   # WEBUI_SECRET_KEY and OPENAI_API_KEY (the LM Studio token) as KEY=value lines
   sops.secrets.open-webui-env = { };
@@ -27,8 +35,36 @@
       # Models come from LM Studio on the Mac mini, not a local Ollama
       ENABLE_OLLAMA_API = "False";
       OPENAI_API_BASE_URL = "http://${private.macMiniIp}:${toString private.lmStudioPort}/v1";
-      # Ask LM Studio for token counts, so each reply can show them
-      DEFAULT_MODEL_METADATA = builtins.toJSON { capabilities.usage = true; };
+      # Every model: show token counts, allow web search, and start each new
+      # chat with web search switched on
+      DEFAULT_MODEL_METADATA = builtins.toJSON {
+        capabilities = {
+          usage = true;
+          web_search = true;
+        };
+        defaultFeatureIds = [ "web_search" ];
+      };
+      # No suggested follow-up questions after each reply: saves an extra
+      # request to the Mac every time. The model can still ask questions itself
+      ENABLE_FOLLOW_UP_GENERATION = "False";
+      # No automatic topic tags on chats, another request to the Mac per chat.
+      # Tags can still be added by hand
+      ENABLE_TAGS_GENERATION = "False";
+      # Search through SearXNG
+      ENABLE_WEB_SEARCH = "True";
+      WEB_SEARCH_ENGINE = "searxng";
+      SEARXNG_QUERY_URL = "http://${searxngHost}:${toString private.searxngPort}/search";
+      # Results per search. Each is only a title, link and snippet, so more
+      # gives the model more to choose from at little cost
+      WEB_SEARCH_RESULT_COUNT = "6";
+      # Pages the model reads are passed on whole; cap them (in characters,
+      # about 5k tokens) so one big page can't fill the model's context
+      WEB_FETCH_MAX_CONTENT_LENGTH = "20000";
+      # Embed uploaded files and knowledge bases with LM Studio on the Mac
+      # instead of on this machine's CPU. URL and token default to the
+      # OPENAI_ ones above
+      RAG_EMBEDDING_ENGINE = "openai";
+      RAG_EMBEDDING_MODEL = "text-embedding-embeddinggemma-300m";
     };
   };
 }

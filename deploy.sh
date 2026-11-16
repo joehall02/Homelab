@@ -89,6 +89,7 @@ rsync -avz --delete \
   --exclude .sops.yaml \
   --exclude docs \
   --exclude AGENTS.md \
+  --exclude .claude \
   ./ "$HOST:$REMOTE_DIR/"
 
 # --- 3. Rebuild ---

@@ -43,6 +43,9 @@ Read [`README.md`](README.md) first for an overview, and the pages it links to i
 - **Prefer stable nixpkgs.** Only use `unstable.<pkg>` for a specific reason.
 - **Comments** are short, plain English, and explain *why*, matching the
   existing files.
+- **Docs and comments describe the current setup.** When something changes,
+  rewrite them to say how it works now and why. Don't mention earlier designs
+  ("at first it…", "it used to…"); git has the history.
 
 ## Where do I change…
 

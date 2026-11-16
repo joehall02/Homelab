@@ -42,6 +42,9 @@
   macMiniIp = "192.168.1.20";
   lmStudioPort = 1234;
 
+  # SearXNG port
+  searxngPort = 8888;
+
   # Beszel hub's public key
   beszelHubKey = "ssh-ed25519 AAAA...";
 

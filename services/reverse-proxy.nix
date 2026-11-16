@@ -5,6 +5,8 @@ let
   # run inside the VPN namespace, so they're reached at its address instead of
   # 127.0.0.1
   vpn = config.vpnNamespaces.vpn.namespaceAddress;
+  # SearXNG can be switched in or out of the namespace (searxng.nix)
+  searxngHost = if config.systemd.services.searx.vpnConfinement.enable then vpn else "127.0.0.1";
   services = {
     jellyfin = "127.0.0.1:${toString private.jellyfinPort}";
     sonarr = "127.0.0.1:${toString private.sonarrPort}";
@@ -18,6 +20,7 @@ let
     audiobookshelf = "${vpn}:${toString private.audiobookshelfPort}";
     beszel = "127.0.0.1:${toString config.services.beszel.hub.port}";
     open-webui = "127.0.0.1:${toString private.openWebuiPort}";
+    searxng = "${searxngHost}:${toString private.searxngPort}";
   };
 in
 {

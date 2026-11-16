@@ -109,8 +109,91 @@ rebuilt, set them again.
 - **Token counts**: `DEFAULT_MODEL_METADATA` turns on the "Usage" capability
   for every model, so LM Studio reports token counts and each reply shows them
   under its info icon.
+- **No suggested follow-ups**: `ENABLE_FOLLOW_UP_GENERATION = "False"`
+  turns off the list of suggested questions after each reply (and the first
+  of them pre-filled in the message box), which would cost an extra request
+  to the Mac after every answer. Models can still ask questions in
+  their replies or with the `ask_user` tool.
+- **No automatic tags**: `ENABLE_TAGS_GENERATION = "False"` stops the model
+  labelling each chat by topic, another background request to the Mac. Tags
+  can still be added by hand. Chat titles are still generated, by the chat
+  model on the Mac.
 - **Telemetry off**: setting `environment` replaces the module's own telemetry
   defaults, so they're restated. Version checks and community sharing are off
   too.
 - **Secrets**: `open-webui-env` holds `WEBUI_SECRET_KEY` (signs logins) and
   `OPENAI_API_KEY` (the LM Studio token). See [Secrets](secrets.md).
+
+## Web search
+
+Models can search the web and cite what they find. In Open WebUI's default
+(Native) mode, search is a pair of tools the model calls when it decides it
+needs to:
+
+1. **`search_web`**: Open WebUI asks SearXNG, a search engine running on the
+   homelab, and gives the model the title, link and snippet of the top
+   results (`WEB_SEARCH_RESULT_COUNT`). See
+   [Other services › SearXNG](other-services.md#searxng-search).
+2. **`fetch_url`**: for a result worth reading, Open WebUI downloads the page
+   and gives the model its text, cut off at `WEB_FETCH_MAX_CONTENT_LENGTH`.
+
+The model can repeat these, for example searching again with a better query,
+before it answers.
+
+### The link to SearXNG
+
+| Part | Detail |
+| --- | --- |
+| Address | `http://<namespace address>:<searxngPort>/search` (`SEARXNG_QUERY_URL`), or `127.0.0.1` when SearXNG is off the VPN |
+| API | SearXNG's search URL with `format=json`. Open WebUI adds the query itself |
+| Auth | None. SearXNG only answers on the homelab, the LAN and Tailscale |
+| Network | Stays on the homelab: from the host into the VPN namespace, through SearXNG's port mapping |
+
+- **The address follows SearXNG.** `open-webui.nix` checks whether SearXNG
+  is confined to the VPN and picks the namespace address or `127.0.0.1` to
+  match, so switching `useVpn` needs no change here.
+- **Only the search goes through the VPN.** Open WebUI runs on the host, so
+  `fetch_url` downloads pages over the home connection.
+- **If SearXNG is down**, or every engine fails, the search returns nothing.
+  Chat still works, just without web results.
+
+### Open WebUI settings
+
+All in `services/open-webui.nix`:
+
+| Setting | Why |
+| --- | --- |
+| `ENABLE_WEB_SEARCH`, `WEB_SEARCH_ENGINE = "searxng"`, `SEARXNG_QUERY_URL` | Turn search on and point it at SearXNG |
+| `WEB_SEARCH_RESULT_COUNT = "6"` | Results per search. They're only snippets, so more is cheap and gives the model more to choose from |
+| `WEB_FETCH_MAX_CONTENT_LENGTH = "20000"` | Caps each fetched page at 20,000 characters (about 5k tokens), so one big page can't fill the context |
+| `capabilities.web_search` in `DEFAULT_MODEL_METADATA` | Lets every model use search |
+| `defaultFeatureIds = [ "web_search" ]` in `DEFAULT_MODEL_METADATA` | Search starts switched on in every new chat. Turn it off per chat from the **+** menu |
+
+## Documents and knowledge bases
+
+Uploaded files and knowledge bases are split into chunks and turned into
+embeddings, so Open WebUI can find the parts that match a question. Those
+embeddings come from LM Studio on the Mac, not the homelab's CPU:
+
+| Setting | Why |
+| --- | --- |
+| `RAG_EMBEDDING_ENGINE = "openai"` | Use an OpenAI-compatible API (LM Studio) for embeddings. The URL and token are the `OPENAI_` ones, so nothing else is needed |
+| `RAG_EMBEDDING_MODEL` | The embedding model's ID in LM Studio |
+
+If the embedding model changes, existing knowledge bases have to be
+re-indexed, because their stored embeddings came from the old model.
+
+## Mac mini: models for search and documents
+
+- **Context length**: a fetched page can be up to 20,000 characters (about 5k
+  tokens), on top of the conversation and search results. Give chat models
+  at least 16k of context in LM Studio. Too short, and pages are cut off
+  without warning.
+- **Embedding model**: `ggml-org/embeddinggemma-300M-GGUF` (Q8_0), a small,
+  text-only model. Its ID in LM Studio (`lms ls`) must match
+  `RAG_EMBEDDING_MODEL`.
+- **Keep it loaded**: load it by hand (Developer tab, or `lms load`) rather
+  than relying on JIT loading. "Only Keep Last JIT Loaded Model" could
+  otherwise unload the chat model whenever a document is embedded. To check,
+  run `lms ps` before and after uploading a file: both models should still be
+  listed.
