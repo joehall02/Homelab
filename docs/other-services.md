@@ -56,6 +56,11 @@ whoever searched. It's also what Open WebUI uses for web search; see
   slower.
 - **JSON results are on** (`search.formats`). Open WebUI asks for JSON, and
   SearXNG refuses it with a 403 otherwise.
+- **Searches aren't logged.** The built-in server logs every request, search
+  query included, and the journal keeps it across reboots. `LogLevelMax =
+  "warning"` drops all of SearXNG's output, because it all arrives at info
+  level; systemd's own warnings about the service still show. That hides
+  SearXNG's errors too.
 - **No limiter.** SearXNG's bot limiter is for public instances and is off by
   default, so it needs no Valkey (Redis) either.
 - **Secret**: `searxng-env` holds `SEARXNG_SECRET`, which signs SearXNG's

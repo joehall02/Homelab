@@ -10,6 +10,7 @@
     ./modules/vpn.nix
     ./modules/graphics.nix
     ./modules/tailscale.nix
+    ./modules/home-manager.nix
 
     # What the homelab runs
     ./services/ssh.nix

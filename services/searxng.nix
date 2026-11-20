@@ -75,6 +75,11 @@ in
     };
   };
 
+  # Its built-in server logs every request, search query included. Its output
+  # all arrives at info level, so this drops it; systemd's own warnings about
+  # the service still show. Comment out to see SearXNG's errors again
+  systemd.services.searx.serviceConfig.LogLevelMax = "warning";
+
   # Run SearXNG inside the VPN namespace, so its searches use the tunnel
   systemd.services.searx.vpnConfinement = lib.mkIf useVpn {
     enable = true;

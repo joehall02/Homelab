@@ -16,9 +16,16 @@
 
     # VPN-Confinement runs chosen systemd services inside a WireGuard namespace
     vpn-confinement.url = "github:Maroka-chan/VPN-Confinement";
+
+    # Home Manager manages the user's own environment: shell, dotfiles, user
+    # programs. Its release branch must match nixpkgs.
+    home-manager = {
+      url = "github:nix-community/home-manager/release-26.05";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
-  outputs = { nixpkgs, nixpkgs-unstable, sops-nix, vpn-confinement, ... }: {
+  outputs = { nixpkgs, nixpkgs-unstable, sops-nix, vpn-confinement, home-manager, ... }: {
     # "homelab" is the name used in --flake `deploy.sh`.
     nixosConfigurations.homelab = nixpkgs.lib.nixosSystem {
       system = "x86_64-linux";
@@ -35,6 +42,7 @@
         ./configuration.nix
         sops-nix.nixosModules.sops
         vpn-confinement.nixosModules.default
+        home-manager.nixosModules.home-manager
       ];
     };
   };

@@ -56,6 +56,7 @@ Read [`README.md`](README.md) first for an overview, and the pages it links to i
 | Give a service an HTTPS name | The `services` list in `services/reverse-proxy.nix` |
 | Route a service through the VPN | Its own module ([Network › VPN namespace](docs/network.md#vpn-namespace)) |
 | Change power, boot or console settings | `modules/system.nix` |
+| Change the user's shell, dotfiles or user programs | `home/homelab.nix` (Home Manager) |
 
 ## Adding a service: checklist
 

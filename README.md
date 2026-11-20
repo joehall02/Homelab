@@ -36,6 +36,7 @@ inside a network namespace whose only way out is a Surfshark WireGuard tunnel. S
 | [Media stack](docs/media-stack.md) | Jellyfin, the arr apps, qBittorrent, Shelfmark, Audiobookshelf and how they connect |
 | [AI](docs/ai.md) | Open WebUI on the homelab, and the link to LM Studio on the Mac mini where the models run |
 | [Other services](docs/other-services.md) | Beszel monitoring, SearXNG search, Immich |
+| [Future plans](docs/future-plans.md) | Planned work that isn't built yet |
 
 ## Getting started
 
