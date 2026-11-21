@@ -26,19 +26,20 @@ flowchart TD
 
     subgraph homelab[" "]
         Caddy["Caddy<br/>:443 on tailscale0 only"]
-        OWUI["Open WebUI<br/>:openWebuiPort"]
+        OWUI["Open WebUI<br/>:openWebuiPort<br/>speech to text: Whisper (base.en)"]
     end
 
     subgraph mac[" "]
-        LMS["LM Studio server<br/>:lmStudioPort/v1"]
-        Ollama["Ollama<br/>localhost only, not used"]
+        LMS["LM Studio server<br/>:lmStudioPort/v1<br/>API token required"]
+        Kokoro["Kokoro (Docker)<br/>text to speech, :kokoroPort/v1<br/>API key required"]
     end
 
     %% Labels sit in the nodes, not on the edges, so no label lands on a line
     LAN --> OWUI
     TS --> Caddy
     Caddy --> OWUI
-    OWUI ==>|"LAN, HTTP + API token"| LMS
+    OWUI ==> LMS
+    OWUI ==> Kokoro
 
     style homelab fill:#0ea5e914,stroke:#0ea5e9,stroke-width:1.5px
     style mac fill:#22c55e14,stroke:#22c55e,stroke-width:1.5px
@@ -61,8 +62,7 @@ The Mac doesn't need Tailscale for this.
   which is on the same LAN, so it works without either machine depending on
   Tailscale.
 - **Who can reach it**: LM Studio is open to the whole LAN, but requests
-  without the token are refused. Ollama stays on the Mac's `localhost`, so it
-  isn't reachable at all.
+  without the token are refused.
 - **Plain HTTP**: the token and prompts cross the LAN unencrypted, like the
   other services' LAN access. Fine on a trusted home network.
 - **If the Mac is off or asleep**: Open WebUI still loads, but lists no models
@@ -121,8 +121,9 @@ rebuilt, set them again.
 - **Telemetry off**: setting `environment` replaces the module's own telemetry
   defaults, so they're restated. Version checks and community sharing are off
   too.
-- **Secrets**: `open-webui-env` holds `WEBUI_SECRET_KEY` (signs logins) and
-  `OPENAI_API_KEY` (the LM Studio token). See [Secrets](secrets.md).
+- **Secrets**: `open-webui-env` holds `WEBUI_SECRET_KEY` (signs logins),
+  `OPENAI_API_KEY` (the LM Studio token) and `AUDIO_TTS_OPENAI_API_KEY` (the
+  Kokoro key, see [Voice](#voice)). See [Secrets](secrets.md).
 
 ## Web search
 
@@ -167,7 +168,7 @@ All in `services/open-webui.nix`:
 | `WEB_SEARCH_RESULT_COUNT = "6"` | Results per search. They're only snippets, so more is cheap and gives the model more to choose from |
 | `WEB_FETCH_MAX_CONTENT_LENGTH = "20000"` | Caps each fetched page at 20,000 characters (about 5k tokens), so one big page can't fill the context |
 | `capabilities.web_search` in `DEFAULT_MODEL_METADATA` | Lets every model use search |
-| `defaultFeatureIds = [ "web_search" ]` in `DEFAULT_MODEL_METADATA` | Search starts switched on in every new chat. Turn it off per chat from the **+** menu |
+| `"web_search"` in `defaultFeatureIds` (`DEFAULT_MODEL_METADATA`) | Search starts switched on in every new chat. Turn it off per chat from the **+** menu |
 
 ## Documents and knowledge bases
 
@@ -182,6 +183,76 @@ embeddings come from LM Studio on the Mac, not the homelab's CPU:
 
 If the embedding model changes, existing knowledge bases have to be
 re-indexed, because their stored embeddings came from the old model.
+
+## Tools: time and code
+
+**Time**: Open WebUI's built-in `get_current_timestamp` and
+`calculate_timestamp` tools give models the date and time, and do date
+arithmetic. They're on by default in Native mode, so nothing is configured.
+Local time uses the time zone the browser reports.
+
+**Code interpreter**: the model can write and run Python, for exact maths,
+dates and small data jobs. The code runs in the browser with Pyodide, so it
+costs neither the homelab nor the Mac anything, and can't touch either.
+
+| Setting | Why |
+| --- | --- |
+| `ENABLE_CODE_INTERPRETER = "True"`, `CODE_INTERPRETER_ENGINE = "pyodide"` | Turn it on, running in the browser |
+| `capabilities.code_interpreter` in `DEFAULT_MODEL_METADATA` | Lets every model use it |
+
+It starts switched on in every new chat (`defaultFeatureIds` in
+`DEFAULT_MODEL_METADATA`); turn it off per chat from the **+** menu.
+
+## Voice
+
+| | Where it runs | Settings |
+| --- | --- | --- |
+| Speech to text | Local Whisper (`base.en`) in Open WebUI on the homelab | `AUDIO_STT_ENGINE = ""`, `WHISPER_MODEL = "base.en"` |
+| Text to speech | [Kokoro](https://github.com/remsky/Kokoro-FastAPI) in Docker on the Mac mini | `AUDIO_TTS_ENGINE = "openai"`, `AUDIO_TTS_OPENAI_API_BASE_URL`, `AUDIO_TTS_MODEL = "kokoro"`, `AUDIO_TTS_VOICE` |
+
+- **Whisper stays on the homelab**, so recordings don't leave it. The
+  browser's own speech recognition (the "Web API" option) sends audio to
+  Google or Apple. `base` is small enough to run on the laptop's CPU, and the
+  English-only `.en` version is more accurate on English. It can't transcribe
+  other languages; switch to plain `base` for those. A bigger model (such as
+  `small.en`) is more accurate but slower.
+- **The Whisper model downloads on first use**, into Open WebUI's cache in
+  `/var/lib/open-webui`.
+- **Kokoro runs on the Mac, not the device.** Open WebUI sends each sentence
+  to the Mac and passes the audio on to the browser, so phones don't download
+  or run a model. On the homelab's CPU it would be several seconds per
+  sentence; on the Mac it keeps up with playback.
+- **On the CPU, not the GPU**: Docker on macOS can't use the GPU. Kokoro is
+  small enough that the CPU keeps ahead of playback, and it leaves the GPU to
+  the chat model.
+- **Voices**: `bf_emma` by default. Each user can pick another Kokoro voice
+  in Settings › Audio, where the text-to-speech engine must be left on
+  "Default": "Browser Kokoro" takes over from the Mac.
+
+### The link to Kokoro
+
+| Part | Detail |
+| --- | --- |
+| Address | `http://<macMiniIp>:<kokoroPort>/v1` (`AUDIO_TTS_OPENAI_API_BASE_URL`) |
+| API | Kokoro-FastAPI's OpenAI-compatible speech API |
+| Auth | An API key, sent as `Authorization: Bearer <key>`. Stored in sops as `AUDIO_TTS_OPENAI_API_KEY` in `open-webui-env`; without it Open WebUI would send the LM Studio token |
+| Network | LAN only, plain HTTP, like LM Studio |
+
+### Mac mini: Kokoro
+
+Kokoro runs in Docker on the Mac mini.
+
+| Setting | Value | Why |
+| --- | --- | --- |
+| Image | `ghcr.io/remsky/kokoro-fastapi-cpu:latest` | The CPU build, the only one Docker on macOS can run |
+| Port | `8880` | Must match `kokoroPort` |
+| `API_KEYS` | The same key as `AUDIO_TTS_OPENAI_API_KEY` | Requests without it are refused |
+| `DEFAULT_VOICE` | `bf_emma` | Used when a request names no voice |
+| `HF_HUB_DISABLE_TELEMETRY` | `1` | No check-in with Hugging Face at startup; the model is in the image |
+| `ENABLE_WEB_PLAYER` | `false` | It can't send the API key, so it would only get errors |
+
+- **Starts on its own**: `restart: unless-stopped` brings the container back
+  whenever Docker starts, so Docker has to start at login.
 
 ## Mac mini: models for search and documents
 

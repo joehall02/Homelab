@@ -41,6 +41,8 @@
   # Mac mini running LM Studio, which serves the models for Open WebUI
   macMiniIp = "192.168.1.20";
   lmStudioPort = 1234;
+  # Kokoro text to speech on the Mac mini, for Open WebUI
+  kokoroPort = 8880;
 
   # SearXNG port
   searxngPort = 8888;

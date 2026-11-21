@@ -61,4 +61,15 @@
 
   # cat with syntax highlighting
   programs.bat.enable = true;
+
+  # Resource monitor: CPU, memory, disks, network and processes
+  programs.btop = {
+    enable = true;
+    settings = {
+      # Use the terminal's background instead of the theme's
+      theme_background = false;
+      # Show processes as a tree, so a service's child processes sit under it
+      proc_tree = true;
+    };
+  };
 }

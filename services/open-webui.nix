@@ -9,7 +9,8 @@ let
       "127.0.0.1";
 in
 {
-  # WEBUI_SECRET_KEY and OPENAI_API_KEY (the LM Studio token) as KEY=value lines
+  # WEBUI_SECRET_KEY, OPENAI_API_KEY (the LM Studio token) and
+  # AUDIO_TTS_OPENAI_API_KEY (the Kokoro key) as KEY=value lines
   sops.secrets.open-webui-env = { };
 
   services.open-webui = {
@@ -35,15 +36,34 @@ in
       # Models come from LM Studio on the Mac mini, not a local Ollama
       ENABLE_OLLAMA_API = "False";
       OPENAI_API_BASE_URL = "http://${private.macMiniIp}:${toString private.lmStudioPort}/v1";
-      # Every model: show token counts, allow web search, and start each new
-      # chat with web search switched on
+      # Every model: show token counts, allow web search and the code
+      # interpreter, and start each new chat with both switched on
       DEFAULT_MODEL_METADATA = builtins.toJSON {
         capabilities = {
           usage = true;
           web_search = true;
+          code_interpreter = true;
         };
-        defaultFeatureIds = [ "web_search" ];
+        defaultFeatureIds = [
+          "web_search"
+          "code_interpreter"
+        ];
       };
+      # Python runs in the browser with Pyodide, so code costs neither this
+      # machine nor the Mac anything
+      ENABLE_CODE_INTERPRETER = "True";
+      CODE_INTERPRETER_ENGINE = "pyodide";
+      # Speech to text with local Whisper on this machine, so recordings never
+      # leave the homelab
+      AUDIO_STT_ENGINE = "";
+      WHISPER_MODEL = "base.en";
+      # Text to speech with Kokoro on the Mac (in Docker), through its
+      # OpenAI-compatible API. Devices only download the finished audio
+      AUDIO_TTS_ENGINE = "openai";
+      AUDIO_TTS_OPENAI_API_BASE_URL = "http://${private.macMiniIp}:${toString private.kokoroPort}/v1";
+      AUDIO_TTS_MODEL = "kokoro";
+      # Default voice; each user can pick another in Settings › Audio
+      AUDIO_TTS_VOICE = "bf_emma";
       # No suggested follow-up questions after each reply: saves an extra
       # request to the Mac every time. The model can still ask questions itself
       ENABLE_FOLLOW_UP_GENERATION = "False";
