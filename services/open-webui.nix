@@ -57,6 +57,9 @@ in
       # leave the homelab
       AUDIO_STT_ENGINE = "";
       WHISPER_MODEL = "base.en";
+      # Skip silence before transcribing, so this machine's CPU has less
+      # audio to get through
+      WHISPER_VAD_FILTER = "True";
       # Text to speech with Kokoro on the Mac (in Docker), through its
       # OpenAI-compatible API. Devices only download the finished audio
       AUDIO_TTS_ENGINE = "openai";
@@ -64,12 +67,21 @@ in
       AUDIO_TTS_MODEL = "kokoro";
       # Default voice; each user can pick another in Settings › Audio
       AUDIO_TTS_VOICE = "bf_emma";
+      # Speak each sentence as soon as it's written, rather than waiting for
+      # the whole reply
+      AUDIO_TTS_SPLIT_ON = "punctuation";
       # No suggested follow-up questions after each reply: saves an extra
       # request to the Mac every time. The model can still ask questions itself
       ENABLE_FOLLOW_UP_GENERATION = "False";
       # No automatic topic tags on chats, another request to the Mac per chat.
       # Tags can still be added by hand
       ENABLE_TAGS_GENERATION = "False";
+      # Unused features off, so their tools aren't sent with every request
+      ENABLE_CALENDAR = "False";
+      ENABLE_AUTOMATIONS = "False";
+      ENABLE_NOTES = "False";
+      ENABLE_MEMORIES = "False";
+      ENABLE_TOOLS = "False";
       # Search through SearXNG
       ENABLE_WEB_SEARCH = "True";
       WEB_SEARCH_ENGINE = "searxng";

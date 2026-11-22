@@ -81,7 +81,7 @@ rebuilt, set them again.
 | Require Authentication | On | Requests need the token |
 | Serve on Local Network | On | Listens on the LAN instead of only `127.0.0.1` |
 | Just-in-Time Model Loading | On | Open WebUI lists every downloaded model; one loads on its first request |
-| Auto unload unused JIT loaded models | On, max idle TTL 10 minutes | Frees the Mac's memory when a model isn't being used |
+| Auto unload unused JIT loaded models | On, max idle TTL 25 minutes | Frees the Mac's memory when a model isn't being used |
 | Only Keep Last JIT Loaded Model | On | Switching models in Open WebUI unloads the previous one |
 
 **Elsewhere on the Mac:**
@@ -118,6 +118,16 @@ rebuilt, set them again.
   labelling each chat by topic, another background request to the Mac. Tags
   can still be added by hand. Chat titles are still generated, by the chat
   model on the Mac.
+- **Unused features off**: `ENABLE_CALENDAR`, `ENABLE_AUTOMATIONS`,
+  `ENABLE_NOTES`, `ENABLE_MEMORIES` and `ENABLE_TOOLS` are `"False"`.
+  `ENABLE_TOOLS` removes the Tool Creation tool and Workspace › Tools (tools
+  added by hand); web search, the code interpreter and the other built-in
+  tools still work. In Native mode every
+  enabled built-in tool's definition goes to the model with each request, so
+  unused features cost context and make each prompt slower to read. Built-in
+  tool categories without a global flag (such as Knowledge Base, Skills and
+  Tasks) are switched per model, under Admin Panel › Settings › Models ›
+  Builtin Tools.
 - **Telemetry off**: setting `environment` replaces the module's own telemetry
   defaults, so they're restated. Version checks and community sharing are off
   too.
@@ -205,10 +215,50 @@ It starts switched on in every new chat (`defaultFeatureIds` in
 
 ## Voice
 
+A voice call is a relay of separate steps:
+
+| Legend |
+| --- |
+| 🟦 Homelab <br>🟩 Mac mini |
+
+```mermaid
+---
+config:
+  layout: dagre
+  look: classic
+---
+flowchart TD
+    Speak(["1. You speak<br/>the browser records until about 2 s of silence"])
+
+    subgraph homelab[" "]
+        Whisper["2. Whisper (base.en) in Open WebUI<br/>speech to text, silence skipped"]
+        Split["4. Open WebUI<br/>cuts the reply into sentences as it streams"]
+        Serve["6. Open WebUI<br/>passes each sentence's audio to the browser"]
+    end
+
+    subgraph mac[" "]
+        LMS["3. gpt-oss-20b in LM Studio<br/>reasons, then writes the reply as text"]
+        Kokoro["5. Kokoro<br/>turns each sentence into speech"]
+    end
+
+    Play(["7. The browser shows the reply and plays each sentence<br/>while the next is still being written"])
+
+    %% Labels sit in the nodes, not on the edges, so no label lands on a line
+    Speak --> Whisper
+    Whisper ==> LMS
+    LMS ==> Split
+    Split ==> Kokoro
+    Kokoro ==> Serve
+    Serve --> Play
+
+    style homelab fill:#0ea5e914,stroke:#0ea5e9,stroke-width:1.5px
+    style mac fill:#22c55e14,stroke:#22c55e,stroke-width:1.5px
+```
+
 | | Where it runs | Settings |
 | --- | --- | --- |
-| Speech to text | Local Whisper (`base.en`) in Open WebUI on the homelab | `AUDIO_STT_ENGINE = ""`, `WHISPER_MODEL = "base.en"` |
-| Text to speech | [Kokoro](https://github.com/remsky/Kokoro-FastAPI) in Docker on the Mac mini | `AUDIO_TTS_ENGINE = "openai"`, `AUDIO_TTS_OPENAI_API_BASE_URL`, `AUDIO_TTS_MODEL = "kokoro"`, `AUDIO_TTS_VOICE` |
+| Speech to text | Local Whisper (`base.en`) in Open WebUI on the homelab | `AUDIO_STT_ENGINE = ""`, `WHISPER_MODEL = "base.en"`, `WHISPER_VAD_FILTER = "True"` |
+| Text to speech | [Kokoro](https://github.com/remsky/Kokoro-FastAPI) in Docker on the Mac mini | `AUDIO_TTS_ENGINE = "openai"`, `AUDIO_TTS_OPENAI_API_BASE_URL`, `AUDIO_TTS_MODEL = "kokoro"`, `AUDIO_TTS_VOICE`, `AUDIO_TTS_SPLIT_ON = "punctuation"` |
 
 - **Whisper stays on the homelab**, so recordings don't leave it. The
   browser's own speech recognition (the "Web API" option) sends audio to
@@ -216,8 +266,21 @@ It starts switched on in every new chat (`defaultFeatureIds` in
   English-only `.en` version is more accurate on English. It can't transcribe
   other languages; switch to plain `base` for those. A bigger model (such as
   `small.en`) is more accurate but slower.
+- **Silence is skipped**: `WHISPER_VAD_FILTER` drops the quiet parts of a
+  recording before Whisper sees it, so the homelab's CPU transcribes less.
 - **The Whisper model downloads on first use**, into Open WebUI's cache in
   `/var/lib/open-webui`.
+- **Replies are spoken as they stream**: `AUDIO_TTS_SPLIT_ON = "punctuation"`
+  sends each finished sentence to Kokoro while the model is still writing the
+  rest, so a long answer starts playing early. `none` would wait for the whole
+  reply.
+- **Where a voice call waits**: the call sends what you said after about two
+  seconds of silence (not configurable), Whisper transcribes it, then nothing
+  plays until gpt-oss has finished reasoning and written its first sentence.
+  Low reasoning effort (see [below](#mac-mini-gpt-oss-20b-load-settings))
+  matters most here.
+- **No Realtime calls**: Open WebUI's Realtime voice mode only works with
+  OpenAI or Azure, which would send audio off the network.
 - **Kokoro runs on the Mac, not the device.** Open WebUI sends each sentence
   to the Mac and passes the audio on to the browser, so phones don't download
   or run a model. On the homelab's CPU it would be several seconds per
@@ -253,6 +316,50 @@ Kokoro runs in Docker on the Mac mini.
 
 - **Starts on its own**: `restart: unless-stopped` brings the container back
   whenever Docker starts, so Docker has to start at login.
+
+## Mac mini: gpt-oss-20b load settings
+
+gpt-oss-20b runs as its GGUF build, on LM Studio's llama.cpp engine.
+
+**Why GGUF, not MLX:**
+
+- **Faster at reading prompts.** Every request carries Open WebUI's system
+  prompt, tool definitions and the chat so far (thousands of tokens before
+  any pasted text or search results), so most of the wait is reading the
+  prompt.
+  llama.cpp reads gpt-oss prompts faster than MLX; writing the reply is about
+  the same on both, since the M4's memory bandwidth limits both.
+- **Reliable tool calls.** On the MLX build, LM Studio let gpt-oss's own
+  format markers (`<|channel|>`) leak into replies and sent malformed tool
+  calls, which ended in errors. The GGUF build's output was clean.
+
+The Mac has 24 GB of unified memory, shared with macOS, Kokoro and the
+embedding model. gpt-oss-20b's weights take about 13 GB, and are already 4-bit
+(MXFP4). Set these by hand in LM Studio (My Models › gpt-oss-20b), where they
+are saved as the model's defaults:
+
+**Load:**
+
+| Setting | Value | Why |
+| --- | --- | --- |
+| Context Length | 100000 | Long chats and fetched pages aren't cut off (see below) |
+| GPU Offload | 24 (all layers) | The whole model runs on the GPU |
+| Max Concurrent Predictions | 2 | Enough for a chat and its title request at once |
+| Unified KV Cache | On | The two predictions share one 100k cache instead of one each |
+| Flash Attention | On (LM Studio's default) | Less memory and faster with long contexts |
+| K / V Cache Quantization | Off | Not needed: the full cache is about 2.5 GB, which fits |
+| Keep Model in Memory | On | macOS doesn't swap parts of the model to disk |
+| Number of Experts | 4 (default) | gpt-oss-20b is built to use 4 of its 32 experts per token. Other values make it worse, not faster |
+
+llama.cpp reserves the cache for the whole context when the model loads, so
+expect about 15.5 GB in use as soon as it's loaded.
+
+**Inference:**
+
+| Setting | Value | Why |
+| --- | --- | --- |
+| Reasoning Effort (Custom Fields) | Low | Replies, and spoken answers, start sooner. Open WebUI uses `/v1/chat/completions`, which may ignore a per-request effort, so it's set here |
+| Temperature, Top P, Repeat Penalty | 1, off, off | gpt-oss's recommended sampling. A repeat penalty can stop it repeating code or names it needs to |
 
 ## Mac mini: models for search and documents
 
