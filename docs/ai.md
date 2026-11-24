@@ -116,8 +116,7 @@ rebuilt, set them again.
   their replies or with the `ask_user` tool.
 - **No automatic tags**: `ENABLE_TAGS_GENERATION = "False"` stops the model
   labelling each chat by topic, another background request to the Mac. Tags
-  can still be added by hand. Chat titles are still generated, by the chat
-  model on the Mac.
+  can still be added by hand.
 - **Unused features off**: `ENABLE_CALENDAR`, `ENABLE_AUTOMATIONS`,
   `ENABLE_NOTES`, `ENABLE_MEMORIES` and `ENABLE_TOOLS` are `"False"`.
   `ENABLE_TOOLS` removes the Tool Creation tool and Workspace › Tools (tools
@@ -344,7 +343,6 @@ are saved as the model's defaults:
 | --- | --- | --- |
 | Context Length | 100000 | Long chats and fetched pages aren't cut off (see below) |
 | GPU Offload | 24 (all layers) | The whole model runs on the GPU |
-| Max Concurrent Predictions | 2 | Enough for a chat and its title request at once |
 | Unified KV Cache | On | The two predictions share one 100k cache instead of one each |
 | Flash Attention | On (LM Studio's default) | Less memory and faster with long contexts |
 | K / V Cache Quantization | Off | Not needed: the full cache is about 2.5 GB, which fits |

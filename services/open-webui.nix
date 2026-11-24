@@ -76,6 +76,7 @@ in
       # No automatic topic tags on chats, another request to the Mac per chat.
       # Tags can still be added by hand
       ENABLE_TAGS_GENERATION = "False";
+      ENABLE_TITLE_GENERATION = "False";
       # Unused features off, so their tools aren't sent with every request
       ENABLE_CALENDAR = "False";
       ENABLE_AUTOMATIONS = "False";
