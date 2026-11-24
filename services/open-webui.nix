@@ -48,6 +48,8 @@ in
           "web_search"
           "code_interpreter"
         ];
+        # No ask_user: the voice screen can't show its questions, so calls hang
+        builtinTools.user_input = false;
       };
       # Python runs in the browser with Pyodide, so code costs neither this
       # machine nor the Mac anything
@@ -57,9 +59,6 @@ in
       # leave the homelab
       AUDIO_STT_ENGINE = "";
       WHISPER_MODEL = "base.en";
-      # Skip silence before transcribing, so this machine's CPU has less
-      # audio to get through
-      WHISPER_VAD_FILTER = "True";
       # Text to speech with Kokoro on the Mac (in Docker), through its
       # OpenAI-compatible API. Devices only download the finished audio
       AUDIO_TTS_ENGINE = "openai";

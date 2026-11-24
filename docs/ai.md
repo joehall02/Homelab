@@ -113,7 +113,12 @@ rebuilt, set them again.
   turns off the list of suggested questions after each reply (and the first
   of them pre-filled in the message box), which would cost an extra request
   to the Mac after every answer. Models can still ask questions in
-  their replies or with the `ask_user` tool.
+  their replies.
+- **No `ask_user` tool**: `DEFAULT_MODEL_METADATA` sets
+  `builtinTools.user_input = false` for every model. The tool waits for
+  answers to clickable questions, which the voice screen doesn't show, so a
+  call would hang. It's off in text chats too, where the model asks in plain
+  text instead.
 - **No automatic tags**: `ENABLE_TAGS_GENERATION = "False"` stops the model
   labelling each chat by topic, another background request to the Mac. Tags
   can still be added by hand.
@@ -230,7 +235,7 @@ flowchart TD
     Speak(["1. You speak<br/>the browser records until about 2 s of silence"])
 
     subgraph homelab[" "]
-        Whisper["2. Whisper (base.en) in Open WebUI<br/>speech to text, silence skipped"]
+        Whisper["2. Whisper (base.en) in Open WebUI<br/>speech to text"]
         Split["4. Open WebUI<br/>cuts the reply into sentences as it streams"]
         Serve["6. Open WebUI<br/>passes each sentence's audio to the browser"]
     end
@@ -256,7 +261,7 @@ flowchart TD
 
 | | Where it runs | Settings |
 | --- | --- | --- |
-| Speech to text | Local Whisper (`base.en`) in Open WebUI on the homelab | `AUDIO_STT_ENGINE = ""`, `WHISPER_MODEL = "base.en"`, `WHISPER_VAD_FILTER = "True"` |
+| Speech to text | Local Whisper (`base.en`) in Open WebUI on the homelab | `AUDIO_STT_ENGINE = ""`, `WHISPER_MODEL = "base.en"` |
 | Text to speech | [Kokoro](https://github.com/remsky/Kokoro-FastAPI) in Docker on the Mac mini | `AUDIO_TTS_ENGINE = "openai"`, `AUDIO_TTS_OPENAI_API_BASE_URL`, `AUDIO_TTS_MODEL = "kokoro"`, `AUDIO_TTS_VOICE`, `AUDIO_TTS_SPLIT_ON = "punctuation"` |
 
 - **Whisper stays on the homelab**, so recordings don't leave it. The
@@ -265,8 +270,6 @@ flowchart TD
   English-only `.en` version is more accurate on English. It can't transcribe
   other languages; switch to plain `base` for those. A bigger model (such as
   `small.en`) is more accurate but slower.
-- **Silence is skipped**: `WHISPER_VAD_FILTER` drops the quiet parts of a
-  recording before Whisper sees it, so the homelab's CPU transcribes less.
 - **The Whisper model downloads on first use**, into Open WebUI's cache in
   `/var/lib/open-webui`.
 - **Replies are spoken as they stream**: `AUDIO_TTS_SPLIT_ON = "punctuation"`
