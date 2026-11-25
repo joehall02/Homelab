@@ -276,6 +276,11 @@ flowchart TD
   sends each finished sentence to Kokoro while the model is still writing the
   rest, so a long answer starts playing early. `none` would wait for the whole
   reply.
+- **Replies are written to be heard**: in a voice call, Open WebUI adds
+  `VOICE_MODE_PROMPT_TEMPLATE` to the system prompt. It asks for plain
+  sentences (no tables, lists or markdown), ranges and symbols as words ("12pm
+  to 2pm") and short answers. It replaces Open WebUI's own default voice
+  prompt, and text chats don't get it.
 - **Where a voice call waits**: the call sends what you said after about two
   seconds of silence (not configurable), Whisper transcribes it, then nothing
   plays until gpt-oss has finished reasoning and written its first sentence.

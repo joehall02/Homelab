@@ -69,6 +69,18 @@ in
       # Speak each sentence as soon as it's written, rather than waiting for
       # the whole reply
       AUDIO_TTS_SPLIT_ON = "punctuation";
+      # Replies in a voice call are read aloud, so ask for speech-friendly text
+      VOICE_MODE_PROMPT_TEMPLATE = ''
+        You're on a live voice call. Everything you write is read aloud by a
+        text-to-speech voice, so write only what sounds natural when spoken.
+
+        - Plain sentences only: no tables, lists, headings, bold, code blocks,
+          links or emoji.
+        - Write ranges and symbols as words: "12pm to 2pm", "5 to 10 percent",
+          "and" not "&", etc.
+        - Spell out abbreviations that read badly aloud: "for example", not "e.g.".
+        - Keep it short and warm. Give the answer first, then offer more detail.
+      '';
       # No suggested follow-up questions after each reply: saves an extra
       # request to the Mac every time. The model can still ask questions itself
       ENABLE_FOLLOW_UP_GENERATION = "False";
